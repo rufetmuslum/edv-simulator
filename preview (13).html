@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<title>ƏDV Zənciri - Final</title>
+
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    padding: 30px;
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .chain {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .box {
+    width: 260px;
+    background: white;
+    border-radius: 16px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  }
+
+  .title { font-weight: bold; margin-bottom: 10px; }
+
+  .row { margin: 6px 0; }
+
+  input {
+    width: 110px;
+    padding: 6px;
+    text-align: center;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+  }
+
+  .readonly {
+    background: #f1f5f9;
+  }
+
+  .vat { color: #2563eb; font-weight: bold; }
+  .budget { color: #16a34a; font-weight: bold; margin-top: 5px; }
+
+  .arrow { font-size: 20px; }
+
+  .summary {
+    margin-top: 50px;
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  }
+
+  .summary-grid {
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .card {
+    padding: 15px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    text-align: center;
+    width: 200px;
+  }
+
+  .card span {
+    font-size: 18px;
+    font-weight: bold;
+    color: #16a34a;
+  }
+
+  .total {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #dc2626;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>💻 ƏDV Zənciri</h2>
+
+<div class="chain">
+
+  <!-- İstehlakçı -->
+  <div class="box">
+    <div class="title">🧑‍💼 İstehlakçı</div>
+
+    <div class="row">Cəmi:
+      <input id="c_total" class="readonly" readonly>
+    </div>
+
+    <div>Əsas: <span id="c_net"></span></div>
+    <div class="vat">ƏDV: <span id="c_vat"></span></div>
+  </div>
+
+  <div class="arrow">➡</div>
+
+  <!-- Mağaza -->
+  <div class="box">
+    <div class="title">🏪 Mağaza</div>
+
+    <div class="row">Alış:
+      <input id="shop_buy" class="readonly" readonly>
+    </div>
+
+    <div class="row">Satış:
+      <input id="shop_total" value="2000" oninput="calc()">
+    </div>
+
+    <div>Əsas: <span id="shop_net"></span></div>
+    <div class="vat">ƏDV: <span id="shop_vat"></span></div>
+
+    <div class="budget">Büdcə: <span id="shop_tax"></span></div>
+  </div>
+
+  <div class="arrow">➡</div>
+
+  <!-- Distributor -->
+  <div class="box">
+    <div class="title">📦 Distributor</div>
+
+    <div class="row">Alış:
+      <input id="dist_buy" class="readonly" readonly>
+    </div>
+
+    <div class="row">Satış:
+      <input id="dist_total" value="1700" oninput="calc()">
+    </div>
+
+    <div>Əsas: <span id="dist_net"></span></div>
+    <div class="vat">ƏDV: <span id="dist_vat"></span></div>
+
+    <div class="budget">Büdcə: <span id="dist_tax"></span></div>
+  </div>
+
+  <div class="arrow">➡</div>
+
+  <!-- İstehsalçı -->
+  <div class="box">
+    <div class="title">🏭 İstehsalçı</div>
+
+    <div class="row">Satış:
+      <input id="prod_total" value="1400" oninput="calc()">
+    </div>
+
+    <div>Əsas: <span id="prod_net"></span></div>
+    <div class="vat">ƏDV: <span id="prod_vat"></span></div>
+
+    <div class="budget">Büdcə: <span id="prod_tax"></span></div>
+  </div>
+
+</div>
+
+<!-- SUMMARY -->
+<div class="summary">
+
+  <h3 style="text-align:center;">📊 Büdcəyə Gedən ƏDV</h3>
+
+  <div class="summary-grid">
+    <div class="card">
+      Mağaza<br><span id="sum_shop"></span>
+    </div>
+
+    <div class="card">
+      Distributor<br><span id="sum_dist"></span>
+    </div>
+
+    <div class="card">
+      İstehsalçı<br><span id="sum_prod"></span>
+    </div>
+  </div>
+
+  <div class="total">
+    Cəmi: <span id="sum_total"></span>
+  </div>
+
+</div>
+
+<script>
+function split(total){
+  let net = total / 1.18;
+  let vat = total - net;
+  return [net, vat];
+}
+
+function calc(){
+
+  let s = +shop_total.value;
+  let d = +dist_total.value;
+  let p = +prod_total.value;
+
+  // 🔥 ZƏNCİR
+  dist_buy.value = p;
+  shop_buy.value = d;
+
+  // 🔥 İSTEHLAKÇI AVTOMATİK
+  let c = s;
+  c_total.value = s;
+
+  // split
+  let [c_n,c_v]=split(c);
+  let [s_n,s_v]=split(s);
+  let [d_n,d_v]=split(d);
+  let [p_n,p_v]=split(p);
+
+  // show
+  c_net.innerText=c_n.toFixed(2);
+  c_vat.innerText=c_v.toFixed(2);
+
+  shop_net.innerText=s_n.toFixed(2);
+  shop_vat.innerText=s_v.toFixed(2);
+
+  dist_net.innerText=d_n.toFixed(2);
+  dist_vat.innerText=d_v.toFixed(2);
+
+  prod_net.innerText=p_n.toFixed(2);
+  prod_vat.innerText=p_v.toFixed(2);
+
+  // tax
+  let t_prod=p_v;
+  let t_dist=d_v-p_v;
+  let t_shop=s_v-d_v;
+
+  prod_tax.innerText=t_prod.toFixed(2);
+  dist_tax.innerText=t_dist.toFixed(2);
+  shop_tax.innerText=t_shop.toFixed(2);
+
+  let total=t_prod+t_dist+t_shop;
+
+  sum_shop.innerText=t_shop.toFixed(2);
+  sum_dist.innerText=t_dist.toFixed(2);
+  sum_prod.innerText=t_prod.toFixed(2);
+  sum_total.innerText=total.toFixed(2)+" AZN";
+}
+
+calc();
+</script>
+
+</body>
+</html>
